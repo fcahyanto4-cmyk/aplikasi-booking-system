@@ -116,11 +116,16 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center space-y-2">
               <p className="text-text-muted text-sm">
                 Belum punya akun?{" "}
                 <Link href="/register" className="text-primary hover:text-primary-hover font-medium transition-colors">
                   Daftar sekarang
+                </Link>
+              </p>
+              <p className="text-text-muted text-sm">
+                <Link href="/forgot-password" className="text-primary/70 hover:text-primary transition-colors text-xs">
+                  Lupa password?
                 </Link>
               </p>
             </div>
