@@ -1,4 +1,4 @@
-export default function ScheduleCardSkeleton() {
+export function ScheduleCardSkeleton() {
   return (
     <div className="bg-surface rounded-xl p-6 border border-border animate-pulse">
       <div className="flex items-center justify-between mb-3">
@@ -19,7 +19,7 @@ export default function ScheduleCardSkeleton() {
   );
 }
 
-export default function EventCardSkeleton() {
+export function EventCardSkeleton() {
   return (
     <div className="bg-surface rounded-xl p-6 border border-border animate-pulse">
       <div className="flex items-center justify-between mb-3">
