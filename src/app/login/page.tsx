@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Eye, EyeOff, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function LoginPage() {
         if (error.message.includes("Invalid login credentials")) {
           setError("Email atau password salah");
         } else if (error.message.includes("Email not confirmed")) {
-          setError("Email belum dikonfirmasi. Cek email kamu atau hubungi admin.");
+          setError("Email belum dikonfirmasi. Hubungi admin untuk konfirmasi manual.");
         } else {
           setError(error.message);
         }
