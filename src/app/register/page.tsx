@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Eye, EyeOff, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const router = useRouter();
