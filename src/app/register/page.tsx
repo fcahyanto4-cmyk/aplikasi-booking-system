@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -29,6 +30,11 @@ export default function RegisterPage() {
 
     if (password.length < 8) {
       setError("Password minimal 8 karakter");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Password tidak cocok");
       return;
     }
 
@@ -48,7 +54,7 @@ export default function RegisterPage() {
         if (error.message.includes("already registered")) {
           setError("Email sudah terdaftar");
         } else {
-          setError(error.message);
+          setError("Terjadi kesalahan. Silakan coba lagi.");
         }
         return;
       }
@@ -58,7 +64,9 @@ export default function RegisterPage() {
       setFullName("");
       setEmail("");
       setPassword("");
+      setConfirmPassword("");
       setPhone("");
+      setTimeout(() => router.push("/login"), 2000);
     } catch {
       setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
@@ -80,12 +88,16 @@ export default function RegisterPage() {
             <CardDescription className="text-text-muted">Buat akun dan mulai gabung mabar</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
-                <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">{error}</div>
+                <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
               {success && (
-                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm">{success}</div>
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm" role="status" aria-live="polite">
+                  {success}
+                </div>
               )}
 
               <div className="space-y-2">
@@ -98,6 +110,9 @@ export default function RegisterPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
                   disabled={loading}
+                  required
+                  autoComplete="name"
+                  aria-required="true"
                 />
               </div>
 
@@ -111,6 +126,10 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
                   disabled={loading}
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  aria-required="true"
                 />
               </div>
 
@@ -125,15 +144,35 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary pr-10"
                     disabled={loading}
+                    required
+                    autoComplete="new-password"
+                    aria-required="true"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm_password" className="text-text">Konfirmasi Password</Label>
+                <Input
+                  id="confirm_password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Ulangi password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
+                  disabled={loading}
+                  required
+                  autoComplete="new-password"
+                  aria-required="true"
+                />
               </div>
 
               <div className="space-y-2">
@@ -148,6 +187,8 @@ export default function RegisterPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
                   disabled={loading}
+                  autoComplete="tel"
+                  inputMode="tel"
                 />
               </div>
 

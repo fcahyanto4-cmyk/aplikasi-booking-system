@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -34,13 +36,13 @@ export default function LoginPage() {
         } else if (error.message.includes("Email not confirmed")) {
           setError("Email belum dikonfirmasi. Hubungi admin untuk konfirmasi manual.");
         } else {
-          setError(error.message);
+          setError("Terjadi kesalahan. Silakan coba lagi.");
         }
         return;
       }
 
       toast.success("Login berhasil!");
-      router.push("/");
+      router.push(redirectTo);
       router.refresh();
     } catch {
       setError("Terjadi kesalahan. Silakan coba lagi.");
@@ -63,9 +65,11 @@ export default function LoginPage() {
             <CardDescription className="text-text-muted">Masuk ke akunmu untuk gabung mabar</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
-                <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">{error}</div>
+                <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
 
               <div className="space-y-2">
@@ -78,6 +82,11 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
                   disabled={loading}
+                  required
+                  autoComplete="email"
+                  aria-required="true"
+                  aria-invalid={error ? "true" : "false"}
+                  aria-describedby={error ? "email-error" : undefined}
                 />
               </div>
 
@@ -92,11 +101,17 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary pr-10"
                     disabled={loading}
+                    required
+                    autoComplete="current-password"
+                    aria-required="true"
+                    aria-invalid={error ? "true" : "false"}
+                    aria-describedby={error ? "password-error" : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
