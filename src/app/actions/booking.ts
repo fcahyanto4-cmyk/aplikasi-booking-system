@@ -39,6 +39,11 @@ export async function joinMabar(
       return { success: false, message: "Jadwal tidak ditemukan." };
     }
 
+    // FIX: Validate schedule status is 'open'
+    if (schedule.status !== "open") {
+      return { success: false, message: "Jadwal ini tidak tersedia untuk booking." };
+    }
+
     // Validate quantity
     const qty = Math.max(1, Math.min(20, Math.floor(quantity)));
     const availableSlots = schedule.max_players - schedule.current_players;
@@ -51,11 +56,14 @@ export async function joinMabar(
       return { success: false, message: `Slot tidak cukup. Sisa slot tersedia: ${availableSlots}.` };
     }
 
-    // Validate guest names: should have exactly (qty - 1) names if qty > 1
+    // FIX: Validate guest names count must be exactly qty-1
     const cleanedGuestNames = guestNames
       .map(name => name.trim())
-      .filter(name => name.length > 0)
-      .slice(0, qty - 1);
+      .filter(name => name.length > 0);
+    
+    if (qty > 1 && cleanedGuestNames.length !== qty - 1) {
+      return { success: false, message: `Jumlah nama teman harus ${qty - 1} orang.` };
+    }
 
     // Insert booking with quantity and guest names
     const { data: booking, error: insertError } = await supabase
@@ -83,12 +91,15 @@ export async function joinMabar(
     }
 
     const venueName = Array.isArray(schedule.venues) ? schedule.venues[0]?.name : schedule.venues?.name;
-    const orderId = `YMB-${booking.id.split('-')[0]}-${Date.now()}`;
+    
+    // FIX: Use full UUID for order_id to prevent collision
+    const orderId = `YMB-${booking.id}-${Date.now()}`;
     
     // Calculate total price based on quantity
     const totalPrice = schedule.price_per_person * qty;
 
-    // Calculate points to use (max 50% of total price)
+    // FIX: Points are NOT deducted here - only at payment confirmation
+    // Just calculate for display purposes
     let pointsToUse = 0;
     if (usePoints && profile?.points_balance && profile.points_balance > 0) {
       const maxPoints = Math.floor(totalPrice * 0.5);
@@ -139,28 +150,8 @@ export async function joinMabar(
         })
         .eq("id", booking.id);
 
-      // Deduct points if used
-      if (pointsToUse > 0) {
-        const supabaseAdmin = createSupabaseClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-          process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
-        
-        await supabaseAdmin
-          .from("profiles")
-          .update({ points_balance: profile!.points_balance! - pointsToUse })
-          .eq("id", user.id);
-          
-        await supabaseAdmin
-          .from("point_transactions")
-          .insert({
-            user_id: user.id,
-            amount: -pointsToUse,
-            type: "redeemed",
-            reference_id: orderId,
-            description: "Redeemed for Mabar booking"
-          });
-      }
+      // FIX: Points deduction moved to payment webhook handler
+      // Do NOT deduct points here to prevent loss on payment failure
 
       revalidatePath(`/jadwal/${scheduleId}`);
       
@@ -196,14 +187,14 @@ export async function cancelBooking(bookingId: string) {
     // Only allow updating own booking via RLS
     const { data: booking, error: fetchError } = await supabase
       .from("bookings")
-      .select("schedule_id, status, user_id")
+      .select("schedule_id, status, user_id, payment_status")
       .eq("id", bookingId)
       .single();
       
     if (fetchError || !booking) {
       return { success: false, message: "Data booking tidak ditemukan." };
     }
-
+    
     // Explicit ownership check (defense in depth — do not rely on RLS alone).
     if (booking.user_id !== user.id) {
       return { success: false, message: "Anda tidak berhak membatalkan booking ini." };
@@ -231,6 +222,41 @@ export async function cancelBooking(bookingId: string) {
     if (updateError) {
       console.error("Cancel error:", updateError);
       return { success: false, message: "Gagal membatalkan pendaftaran." };
+    }
+
+    // FIX: Refund points if booking was paid
+    if (booking.payment_status === "paid") {
+      // Get points transaction for this booking
+      const { data: txs } = await supabaseAdmin
+        .from("point_transactions")
+        .select("*")
+        .eq("reference_id", bookingId)
+        .eq("type", "redeemed");
+
+      if (txs && txs.length > 0) {
+        const tx = txs[0];
+        const pointsToRefund = Math.abs(tx.amount);
+        const { data: profile } = await supabaseAdmin
+          .from("profiles")
+          .select("points_balance")
+          .eq("id", user.id)
+          .single();
+
+        await supabaseAdmin
+          .from("profiles")
+          .update({ points_balance: (profile?.points_balance || 0) + pointsToRefund })
+          .eq("id", user.id);
+
+        await supabaseAdmin
+          .from("point_transactions")
+          .insert({
+            user_id: user.id,
+            amount: pointsToRefund,
+            type: "refunded",
+            reference_id: bookingId,
+            description: "Points refunded due to booking cancellation"
+          });
+      }
     }
 
     // Revalidate
