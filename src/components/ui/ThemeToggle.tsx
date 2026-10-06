@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 
 interface ThemeToggleProps {
@@ -8,23 +8,52 @@ interface ThemeToggleProps {
   className?: string;
 }
 
+const emptySubscribe = () => () => {};
+
+const themeListeners = new Set<() => void>();
+const notifyThemeListeners = () => {
+  themeListeners.forEach((listener) => listener());
+};
+
+const subscribeTheme = (callback: () => void) => {
+  themeListeners.add(callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    themeListeners.delete(callback);
+    window.removeEventListener("storage", callback);
+  };
+};
+
+const getOutdoorSnapshot = () => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("ymb_outdoor_mode") === "true";
+};
+
 export default function ThemeToggle({ variant = "icon", className = "" }: ThemeToggleProps) {
-  const [isOutdoor, setIsOutdoor] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  const isOutdoor = useSyncExternalStore(
+    subscribeTheme,
+    getOutdoorSnapshot,
+    () => false
+  );
 
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("ymb_outdoor_mode");
-    if (saved === "true") {
-      setIsOutdoor(true);
+    if (isOutdoor) {
       document.documentElement.classList.add("outdoor");
       document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.remove("outdoor");
+      document.documentElement.classList.add("dark");
     }
-  }, []);
+  }, [isOutdoor]);
 
   const toggleTheme = () => {
     const next = !isOutdoor;
-    setIsOutdoor(next);
     if (next) {
       document.documentElement.classList.add("outdoor");
       document.documentElement.classList.remove("dark");
@@ -34,9 +63,10 @@ export default function ThemeToggle({ variant = "icon", className = "" }: ThemeT
       document.documentElement.classList.add("dark");
       localStorage.setItem("ymb_outdoor_mode", "false");
     }
+    notifyThemeListeners();
   };
 
-  if (!mounted) {
+  if (!isMounted) {
     return (
       <div className={`w-9 h-9 rounded-lg bg-surface/40 animate-pulse ${className}`} />
     );
