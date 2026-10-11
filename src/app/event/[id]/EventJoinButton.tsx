@@ -34,7 +34,7 @@ export default function EventJoinButton({ eventId, isBooked, isFull, isLoggedIn,
 
   const handleInitialClick = () => {
     if (!isLoggedIn) {
-      router.push("/login");
+      router.push(`/login?redirectTo=/event/${eventId}`);
       return;
     }
     setShowModal(true);

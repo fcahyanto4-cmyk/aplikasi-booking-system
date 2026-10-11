@@ -278,7 +278,7 @@ export default async function JadwalDetailPage({ params }: JadwalDetailProps) {
                 
                 {!user && (
                   <p className="text-xs text-center text-text-muted mt-4">
-                    Anda harus <Link href="/login" className="text-primary hover:underline">login</Link> untuk bergabung.
+                    Anda harus <Link href={`/login?redirectTo=/jadwal/${typedSchedule.id}`} className="text-primary hover:underline">login</Link> untuk bergabung.
                   </p>
                 )}
                 

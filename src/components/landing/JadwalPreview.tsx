@@ -11,9 +11,10 @@ import { useRealtimeSlots } from "@/hooks/useRealtimeSlots";
 
 interface JadwalPreviewProps {
   schedules: ScheduleWithVenue[];
+  isLoggedIn?: boolean;
 }
 
-export default function JadwalPreview({ schedules }: JadwalPreviewProps) {
+export default function JadwalPreview({ schedules, isLoggedIn = false }: JadwalPreviewProps) {
   const { ref, isIntersecting } = useIntersectionObserver();
 
   return (
@@ -46,6 +47,7 @@ export default function JadwalPreview({ schedules }: JadwalPreviewProps) {
                 schedule={schedule}
                 index={index}
                 isIntersecting={isIntersecting}
+                isLoggedIn={isLoggedIn}
               />
             ))}
           </div>
@@ -56,16 +58,29 @@ export default function JadwalPreview({ schedules }: JadwalPreviewProps) {
             isIntersecting ? "opacity-100" : "opacity-0"
           }`}
         >
-          <button className="text-primary hover:text-primary-hover font-medium transition-colors text-sm inline-flex items-center gap-1">
+          <Link
+            href="/jadwal"
+            className="text-primary hover:text-primary-hover font-medium transition-colors text-sm inline-flex items-center gap-1"
+          >
             Lihat Semua Jadwal →
-          </button>
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function ScheduleCard({ schedule, index, isIntersecting }: { schedule: ScheduleWithVenue, index: number, isIntersecting: boolean }) {
+function ScheduleCard({
+  schedule,
+  index,
+  isIntersecting,
+  isLoggedIn = false,
+}: {
+  schedule: ScheduleWithVenue;
+  index: number;
+  isIntersecting: boolean;
+  isLoggedIn?: boolean;
+}) {
   const currentPlayers = useRealtimeSlots('schedules', schedule.id, schedule.current_players);
   const slotsLeft = schedule.max_players - currentPlayers;
   const isFull = slotsLeft <= 0;
@@ -131,12 +146,21 @@ function ScheduleCard({ schedule, index, isIntersecting }: { schedule: ScheduleW
       </CardContent>
 
       <div className="flex flex-col gap-2 p-6 pt-0">
-        <Link 
-          href={`/jadwal/${schedule.id}`}
-          className="w-full inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-background font-semibold rounded-lg transition-colors h-10 px-4 py-2"
-        >
-          Join Mabar
-        </Link>
+        {isFull ? (
+          <button
+            disabled
+            className="w-full inline-flex items-center justify-center bg-surface-hover text-text-muted font-semibold rounded-lg h-10 px-4 py-2 cursor-not-allowed opacity-75"
+          >
+            Slot Penuh
+          </button>
+        ) : (
+          <Link 
+            href={isLoggedIn ? `/jadwal/${schedule.id}` : `/login?redirectTo=/jadwal/${schedule.id}`}
+            className="w-full inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-background font-semibold rounded-lg transition-colors h-10 px-4 py-2"
+          >
+            Join Mabar
+          </Link>
+        )}
         <p className="text-center text-xs text-text-muted">
           {slotsLeft <= 0 ? 0 : slotsLeft} slot tersisa
         </p>

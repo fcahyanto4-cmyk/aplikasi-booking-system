@@ -54,7 +54,7 @@ export default function JoinButton({ scheduleId, isBooked, initialPlayers, maxPl
 
   const handleInitialClick = () => {
     if (!isLoggedIn) {
-      router.push("/login");
+      router.push(`/login?redirectTo=/jadwal/${scheduleId}`);
       return;
     }
     // Reset state when opening modal

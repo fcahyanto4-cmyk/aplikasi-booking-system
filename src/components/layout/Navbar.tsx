@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,18 +29,30 @@ interface NavbarProps {
   profile: Profile | null;
 }
 
-const navLinks = [
-  { label: "Jadwal", href: "#jadwal" },
+// Navigation links for guests (landing page sections)
+const guestNavLinks = [
+  { label: "Jadwal", href: "/#jadwal" },
+  { label: "Galeri", href: "/#galeri" },
+  { label: "Testimoni", href: "/#testimoni" },
+  { label: "Venue", href: "/#venue" },
+];
+
+// Navigation links for logged-in members
+const memberNavLinks = [
+  { label: "Beranda", href: "/" },
+  { label: "Jadwal Mabar", href: "/jadwal" },
   { label: "Event", href: "/event" },
-  { label: "Galeri", href: "#galeri" },
-  { label: "Testimoni", href: "#testimoni" },
-  { label: "Venue", href: "#venue" },
+  { label: "Notifikasi", href: "/notifications" },
 ];
 
 export default function Navbar({ user, profile }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isLoggedIn = !!(user && profile);
+  const navLinks = isLoggedIn ? memberNavLinks : guestNavLinks;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,14 +71,32 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);
-    if (href.startsWith("#") && window.location.pathname === "/") {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+
+    // Handle hash links (e.g., "/#jadwal")
+    if (href.includes("#")) {
+      const hashPart = href.substring(href.indexOf("#"));
+      const pathPart = href.substring(0, href.indexOf("#")) || "/";
+
+      if (pathname === pathPart || (pathPart === "/" && pathname === "/")) {
+        // Same page – smooth scroll
+        const element = document.querySelector(hashPart);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+          return;
+        }
       }
+      // Different page – navigate then scroll
+      router.push(href);
     } else {
-      router.push(href.startsWith("#") ? "/" + href : href);
+      router.push(href);
     }
+  };
+
+  const isActiveLink = (href: string) => {
+    // Hash links (e.g., /#jadwal) should never show as "active" in the navbar
+    if (href.includes("#")) return false;
+    if (href === "/") return pathname === "/";
+    return pathname?.startsWith(href) ?? false;
   };
 
   const isAdmin = profile?.role === "admin" || profile?.role === "super_admin";
@@ -96,12 +126,16 @@ export default function Navbar({ user, profile }: NavbarProps) {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <button
                 key={link.href}
                 onClick={() => handleNavClick(link.href)}
-                className="text-text-muted hover:text-primary font-medium transition-colors duration-200 text-sm"
+                className={`px-3.5 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                  isActiveLink(link.href)
+                    ? "text-primary bg-primary/10"
+                    : "text-text-muted hover:text-primary hover:bg-surface/60"
+                }`}
               >
                 {link.label}
               </button>
@@ -110,7 +144,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center gap-3">
-            {user && profile ? (
+            {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 hover:opacity-80 transition-opacity outline-none">
                   <Avatar className="h-8 w-8 border border-border">
@@ -185,12 +219,16 @@ export default function Navbar({ user, profile }: NavbarProps) {
             >
               <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
               <div className="flex flex-col h-full pt-8">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
                   {navLinks.map((link) => (
                     <button
                       key={link.href}
                       onClick={() => handleNavClick(link.href)}
-                      className="text-text hover:text-primary font-medium transition-colors text-left text-lg py-2"
+                      className={`text-left text-lg py-2.5 px-3 rounded-lg font-medium transition-all duration-200 ${
+                        isActiveLink(link.href)
+                          ? "text-primary bg-primary/10"
+                          : "text-text hover:text-primary hover:bg-surface-hover"
+                      }`}
                     >
                       {link.label}
                     </button>
@@ -198,7 +236,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                 </div>
 
                 <div className="mt-auto pb-8 space-y-3">
-                  {user && profile ? (
+                  {isLoggedIn ? (
                     <>
                       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
                         <Avatar className="h-10 w-10 border border-border">

@@ -1,17 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { Calendar, Clock, MapPin, Users, Info } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Info, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { formatDate, formatCurrency } from "@/lib/utils/format";
 import EventJoinButton from "./EventJoinButton";
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+interface EventDetailPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function EventDetailPage({ params }: EventDetailPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data: event } = await supabase
     .from("events")
     .select("*, venues(*)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!event) {
@@ -47,6 +53,14 @@ export default async function EventDetailPage({ params }: { params: { id: string
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-4">
+        <Link 
+          href="/event" 
+          className="inline-flex items-center gap-2 text-text-muted hover:text-primary transition-colors mb-8"
+        >
+          <ArrowLeft size={20} />
+          <span>Kembali ke Event</span>
+        </Link>
+
         <div className="bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="bg-primary/10 p-8 border-b border-border">
             <h1 className="text-3xl md:text-4xl font-bold text-text mb-4">{event.title}</h1>
@@ -129,6 +143,12 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   pointsBalance={pointsBalance}
                   price={event.price}
                 />
+
+                {!user && (
+                  <p className="text-xs text-center text-text-muted mt-4">
+                    Anda harus <Link href={`/login?redirectTo=/event/${event.id}`} className="text-accent hover:underline">login</Link> untuk mendaftar event.
+                  </p>
+                )}
               </div>
             </div>
           </div>

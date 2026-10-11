@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import { ClientNavbar, ClientFooter } from "@/components/layout/ClientLayoutWrapper";
+import { ClientNavbar, ClientFooter, ClientBottomNav } from "@/components/layout/ClientLayoutWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import { createClient } from "@/lib/supabase/server";
 
@@ -60,7 +60,8 @@ export default async function RootLayout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-text min-h-screen flex flex-col`}>
         <ClientNavbar user={user} profile={profile} />
         <main>{children}</main>
-        <ClientFooter />
+        <ClientFooter user={user} />
+        <ClientBottomNav user={user} />
         <Toaster />
       </body>
     </html>

@@ -62,9 +62,25 @@ export default function LoginPage() {
               </span>
             </Link>
             <CardTitle className="text-2xl font-bold text-text">Masuk</CardTitle>
-            <CardDescription className="text-text-muted">Masuk ke akunmu untuk gabung mabar</CardDescription>
+            <CardDescription className="text-text-muted">
+              {redirectTo && redirectTo.startsWith("/event")
+                ? "Masuk ke akunmu untuk mendaftar event & turnamen"
+                : redirectTo && redirectTo.startsWith("/jadwal")
+                ? "Masuk ke akunmu untuk bergabung ke jadwal mabar"
+                : "Masuk ke akunmu untuk gabung mabar"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            {redirectTo && (redirectTo.startsWith("/jadwal") || redirectTo.startsWith("/event")) && (
+              <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/25 text-primary text-xs flex items-center gap-2">
+                <LogIn size={16} className="shrink-0" />
+                <span>
+                  {redirectTo.startsWith("/event")
+                    ? "Silakan login terlebih dahulu untuk mendaftar event."
+                    : "Silakan login terlebih dahulu untuk bergabung ke jadwal mabar."}
+                </span>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
                 <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm" role="alert" aria-live="polite">

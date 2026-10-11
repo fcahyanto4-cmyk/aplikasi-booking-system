@@ -17,8 +17,9 @@ export function useRealtimeSlots(table: 'schedules' | 'events', recordId: string
   }
 
   useEffect(() => {
-    // Deterministic channel name, no Math.random() spam
-    const channelName = `realtime_${table}_${recordId}`;
+    // Unique channel per hook instance to allow multiple listeners without callback-after-subscribe errors
+    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 8);
+    const channelName = `realtime_${table}_${recordId}_${uniqueId}`;
     
     const channel = supabase
       .channel(channelName)

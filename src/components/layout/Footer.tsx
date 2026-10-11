@@ -1,13 +1,30 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, Camera } from "lucide-react";
 
-const quickLinks = [
-  { label: "Jadwal", href: "#jadwal" },
-  { label: "Galeri", href: "#galeri" },
-  { label: "Testimoni", href: "#testimoni" },
+interface FooterProps {
+  isLoggedIn?: boolean;
+}
+
+// Guest quick links (landing page anchors)
+const guestQuickLinks = [
+  { label: "Jadwal", href: "/#jadwal" },
+  { label: "Galeri", href: "/#galeri" },
+  { label: "Testimoni", href: "/#testimoni" },
+  { label: "Venue", href: "/#venue" },
   { label: "Masuk", href: "/login" },
   { label: "Daftar", href: "/register" },
+];
+
+// Member quick links (actual pages)
+const memberQuickLinks = [
+  { label: "Jadwal Mabar", href: "/jadwal" },
+  { label: "Event & Turnamen", href: "/event" },
+  { label: "Notifikasi", href: "/notifications" },
+  { label: "Profil Saya", href: "/profil" },
+  { label: "Tiket Saya", href: "/profil#tiket" },
 ];
 
 const contactLinks = [
@@ -28,7 +45,9 @@ const contactLinks = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ isLoggedIn = false }: FooterProps) {
+  const quickLinks = isLoggedIn ? memberQuickLinks : guestQuickLinks;
+
   return (
     <footer className="bg-surface border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,7 +68,9 @@ export default function Footer() {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-text font-semibold mb-4">Tautan Cepat</h3>
+            <h3 className="text-text font-semibold mb-4">
+              {isLoggedIn ? "Menu Member" : "Tautan Cepat"}
+            </h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.href}>
