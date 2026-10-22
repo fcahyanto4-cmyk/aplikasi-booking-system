@@ -1,0 +1,39 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Runs every 2 days at 04:00 UTC to prevent Supabase free tier inactivity pause
+    - cron: "0 4 */2 * *"
+  workflow_dispatch: # Allows manual trigger from GitHub Actions dashboard
+
+jobs:
+  keep-alive:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive ping to Supabase REST API
+        run: |
+          SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}"
+          SUPABASE_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}"
+
+          # Use project fallback if secrets are not defined in GitHub repo
+          if [ -z "$SUPABASE_URL" ]; then
+            SUPABASE_URL="https://vaakpcldingezdvlisgp.supabase.co"
+          fi
+          if [ -z "$SUPABASE_KEY" ]; then
+            SUPABASE_KEY="sb_publishable_rZBri62nHnKFDNzsgC2qvg_HpErwo9d"
+          fi
+
+          echo "Pinging Supabase REST API ($SUPABASE_URL)..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1")
+
+          echo "HTTP Response Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 204 ]; then
+            echo "Success: Supabase database is active and awake!"
+          else
+            echo "Error: Unexpected response $HTTP_STATUS from Supabase"
+            exit 1
+          fi

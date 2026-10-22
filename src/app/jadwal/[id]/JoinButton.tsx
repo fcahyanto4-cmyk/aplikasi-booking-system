@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 import "@/types/midtrans";
+import { syncPaymentStatus } from "@/app/actions/payment";
 
 interface JoinButtonProps {
   scheduleId: string;
@@ -101,9 +102,12 @@ export default function JoinButton({ scheduleId, isBooked, initialPlayers, maxPl
       if (result.success && result.token) {
         // Call Midtrans Snap
         window.snap.pay(result.token, {
-          onSuccess: function () {
+          onSuccess: async function (snapResult) {
+            const targetOrderId = snapResult?.order_id || result.orderId;
+            if (targetOrderId) {
+              await syncPaymentStatus(targetOrderId);
+            }
             setStatus({ success: true, message: "Pembayaran berhasil! Anda sudah terdaftar di mabar ini." });
-            // Optionally refresh the page to update slot count
             router.refresh();
           },
           onPending: function () {

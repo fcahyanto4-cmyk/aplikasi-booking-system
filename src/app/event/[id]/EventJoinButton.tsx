@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 
 import "@/types/midtrans";
+import { syncPaymentStatus } from "@/app/actions/payment";
 
 interface EventJoinButtonProps {
   eventId: string;
@@ -50,7 +51,11 @@ export default function EventJoinButton({ eventId, isBooked, isFull, isLoggedIn,
       
       if (result.success && result.token) {
         window.snap.pay(result.token, {
-          onSuccess: function () {
+          onSuccess: async function (snapResult) {
+            const targetOrderId = snapResult?.order_id || result.orderId;
+            if (targetOrderId) {
+              await syncPaymentStatus(targetOrderId);
+            }
             setStatus({ success: true, message: "Pembayaran berhasil! Anda sudah terdaftar di event ini." });
             router.refresh();
           },

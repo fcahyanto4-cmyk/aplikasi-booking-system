@@ -19,13 +19,13 @@ export default async function ProfilPage() {
 
   const { data: bookings } = await supabase
     .from("bookings")
-    .select(`id, status, payment_status, snap_token, quantity, guest_names, created_at, schedules (id, date, start_time, end_time, price_per_person, status, venues (name, address))`)
+    .select(`id, order_id, status, payment_status, snap_token, quantity, guest_names, created_at, schedules (id, date, start_time, end_time, price_per_person, status, venues (name, address))`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   const { data: eventParticipants } = await supabase
     .from("event_participants")
-    .select(`id, status, payment_status, snap_token, created_at, events (id, title, date, start_time, end_time, price, status, venues (name, address))`)
+    .select(`id, order_id, status, payment_status, snap_token, created_at, events (id, title, date, start_time, end_time, price, status, venues (name, address))`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -91,7 +91,7 @@ export default async function ProfilPage() {
                             <span className="text-primary font-bold">{formatCurrency(event.price)}</span>
                             <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider mb-2 ${participant.payment_status === 'paid' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-accent/20 text-accent border border-accent/30'}`}>{participant.payment_status === 'paid' ? 'Lunas' : 'Menunggu Pembayaran'}</span>
                             <div className="flex gap-2 w-full sm:w-auto">
-                              {participant.payment_status === 'pending' && participant.snap_token && <PayButton token={participant.snap_token} />}
+                              {participant.payment_status === 'pending' && participant.snap_token && <PayButton token={participant.snap_token} orderId={participant.order_id} />}
                               <CancelEventButton participantId={participant.id} />
                             </div>
                           </div>
@@ -140,7 +140,7 @@ export default async function ProfilPage() {
                             <span className="text-primary font-bold">{formatCurrency(totalPrice)}{qty > 1 && <span className="text-xs text-text-muted font-normal ml-1">({qty}×{formatCurrency(schedule.price_per_person)})</span>}</span>
                             <span className={`px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider mb-2 ${booking.payment_status === 'paid' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-accent/20 text-accent border border-accent/30'}`}>{booking.payment_status === 'paid' ? 'Lunas' : 'Menunggu Pembayaran'}</span>
                             <div className="flex gap-2 w-full sm:w-auto">
-                              {booking.payment_status === 'pending' && booking.snap_token && <PayButton token={booking.snap_token} />}
+                              {booking.payment_status === 'pending' && booking.snap_token && <PayButton token={booking.snap_token} orderId={booking.order_id} />}
                               <CancelButton bookingId={booking.id} />
                             </div>
                           </div>

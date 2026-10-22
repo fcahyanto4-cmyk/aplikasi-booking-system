@@ -139,7 +139,8 @@ export async function registerEvent(eventId: string, usePoints: boolean = false)
       return { 
         success: true, 
         message: "Lanjutkan ke pembayaran.", 
-        token 
+        token,
+        orderId
       };
     } catch (midtransError) {
       console.error("Midtrans Error:", midtransError);

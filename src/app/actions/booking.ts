@@ -158,7 +158,8 @@ export async function joinMabar(
       return { 
         success: true, 
         message: "Lanjutkan ke pembayaran.", 
-        token 
+        token,
+        orderId
       };
     } catch (midtransError) {
       console.error("Midtrans Error:", midtransError);
