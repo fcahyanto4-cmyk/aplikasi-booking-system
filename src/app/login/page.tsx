@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Eye, EyeOff, LogIn } from "lucide-react";
+import { Loader2, Eye, EyeOff, LogIn, Sparkles, User, Shield } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<"member" | "admin" | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +52,43 @@ export default function LoginPage() {
     }
   };
 
+  const handleQuickDemo = async (role: "member" | "admin") => {
+    setError("");
+    setDemoLoading(role);
+
+    const demoEmail = role === "admin" ? "admin@yukmainbola.com" : "demo@yukmainbola.com";
+    const demoPassword = role === "admin" ? "adminpassword123" : "demopassword123";
+    const targetUrl = role === "admin" ? "/admin" : (redirectTo !== "/" ? redirectTo : "/");
+
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+
+      if (error) {
+        setError(`Gagal masuk akun demo: ${error.message}`);
+        return;
+      }
+
+      toast.success(
+        role === "admin"
+          ? "Berhasil masuk sebagai Admin Demo (Super Admin)!"
+          : "Berhasil masuk sebagai Member Demo (Budi Santoso)!"
+      );
+      router.push(targetUrl);
+      router.refresh();
+    } catch {
+      setError("Terjadi kesalahan saat masuk akun demo.");
+    } finally {
+      setDemoLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-fade-in">
@@ -71,6 +109,52 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Quick Demo Access Box for HRD / Reviewer */}
+            <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-primary/10 via-surface to-accent/10 border border-primary/30 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-accent" />
+                  Mode Demo (1-Click Login)
+                </span>
+                <span className="text-[10px] bg-accent/20 text-accent font-semibold px-2 py-0.5 rounded-full border border-accent/30">
+                  Untuk HRD / Reviewer
+                </span>
+              </div>
+              <p className="text-xs text-text-muted leading-relaxed">
+                Langsung uji coba semua fitur tanpa perlu registrasi manual:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleQuickDemo("member")}
+                  disabled={loading || demoLoading !== null}
+                  className="w-full text-xs font-semibold border-primary/40 hover:bg-primary/20 text-text hover:text-primary transition-all py-2.5 h-auto flex items-center justify-center gap-1.5"
+                >
+                  {demoLoading === "member" ? (
+                    <Loader2 size={14} className="animate-spin text-primary" />
+                  ) : (
+                    <User size={14} className="text-primary" />
+                  )}
+                  Masuk sbg Member
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleQuickDemo("admin")}
+                  disabled={loading || demoLoading !== null}
+                  className="w-full text-xs font-semibold border-accent/40 hover:bg-accent/20 text-text hover:text-accent transition-all py-2.5 h-auto flex items-center justify-center gap-1.5"
+                >
+                  {demoLoading === "admin" ? (
+                    <Loader2 size={14} className="animate-spin text-accent" />
+                  ) : (
+                    <Shield size={14} className="text-accent" />
+                  )}
+                  Masuk sbg Admin
+                </Button>
+              </div>
+            </div>
+
             {redirectTo && (redirectTo.startsWith("/jadwal") || redirectTo.startsWith("/event")) && (
               <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/25 text-primary text-xs flex items-center gap-2">
                 <LogIn size={16} className="shrink-0" />
@@ -81,6 +165,16 @@ export default function LoginPage() {
                 </span>
               </div>
             )}
+
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-surface px-2 text-text-muted">Atau masuk manual</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
                 <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm" role="alert" aria-live="polite">
@@ -97,7 +191,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary"
-                  disabled={loading}
+                  disabled={loading || demoLoading !== null}
                   required
                   autoComplete="email"
                   aria-required="true"
@@ -116,7 +210,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-background border-border text-text placeholder:text-text-muted/50 focus-visible:ring-primary pr-10"
-                    disabled={loading}
+                    disabled={loading || demoLoading !== null}
                     required
                     autoComplete="current-password"
                     aria-required="true"
@@ -136,7 +230,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || demoLoading !== null}
                 className="w-full bg-primary hover:bg-primary-hover text-background font-semibold rounded-lg transition-all duration-300"
               >
                 {loading ? (

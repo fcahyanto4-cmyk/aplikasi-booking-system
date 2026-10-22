@@ -79,6 +79,14 @@ export default function HeroSection() {
           >
             Lihat Jadwal
           </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => router.push("/login")}
+            className="border-accent/40 text-accent hover:bg-accent/10 rounded-lg px-6 py-6 text-base transition-all duration-300 font-semibold shadow-sm"
+          >
+            ⚡ Coba Demo (HRD)
+          </Button>
         </div>
       </div>
 

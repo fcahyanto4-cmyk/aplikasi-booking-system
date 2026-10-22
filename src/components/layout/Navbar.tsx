@@ -190,6 +190,13 @@ export default function Navbar({ user, profile }: NavbarProps) {
             ) : (
               <>
                 <Button
+                  variant="outline"
+                  onClick={() => router.push("/login")}
+                  className="border-accent/40 text-accent hover:bg-accent/15 text-xs font-semibold rounded-lg shadow-sm"
+                >
+                  ⚡ Demo HRD
+                </Button>
+                <Button
                   variant="ghost"
                   onClick={() => router.push("/login")}
                   className="text-text-muted hover:text-text hover:bg-surface"
@@ -282,6 +289,16 @@ export default function Navbar({ user, profile }: NavbarProps) {
                     </>
                   ) : (
                     <>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          router.push("/login");
+                        }}
+                        className="w-full justify-center border-accent/40 text-accent hover:bg-accent/15 font-semibold rounded-lg text-sm"
+                      >
+                        ⚡ Coba Akun Demo (HRD)
+                      </Button>
                       <Button
                         variant="ghost"
                         onClick={() => {
