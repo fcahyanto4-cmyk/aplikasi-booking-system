@@ -77,8 +77,8 @@ export default function LoginPage() {
 
       toast.success(
         role === "admin"
-          ? "Berhasil masuk sebagai Admin Demo (Super Admin)!"
-          : "Berhasil masuk sebagai Member Demo (Budi Santoso)!"
+          ? "Berhasil masuk sebagai Administrator!"
+          : "Berhasil masuk sebagai Tamu Undangan!"
       );
       router.push(targetUrl);
       router.refresh();
@@ -109,19 +109,19 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Quick Demo Access Box for HRD / Reviewer */}
+            {/* Quick Demo Access Box */}
             <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-primary/10 via-surface to-accent/10 border border-primary/30 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
                   <Sparkles size={14} className="text-accent" />
-                  Mode Demo (1-Click Login)
+                  Akses Cepat (Akun Tamu)
                 </span>
                 <span className="text-[10px] bg-accent/20 text-accent font-semibold px-2 py-0.5 rounded-full border border-accent/30">
-                  Untuk HRD / Reviewer
+                  Uji Coba Langsung
                 </span>
               </div>
               <p className="text-xs text-text-muted leading-relaxed">
-                Langsung uji coba semua fitur tanpa perlu registrasi manual:
+                Silakan pilih akun di bawah ini untuk mencoba seluruh fitur aplikasi tanpa perlu mendaftar:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <Button
@@ -136,7 +136,7 @@ export default function LoginPage() {
                   ) : (
                     <User size={14} className="text-primary" />
                   )}
-                  Masuk sbg Member
+                  Masuk sebagai Tamu
                 </Button>
                 <Button
                   type="button"
@@ -150,7 +150,7 @@ export default function LoginPage() {
                   ) : (
                     <Shield size={14} className="text-accent" />
                   )}
-                  Masuk sbg Admin
+                  Masuk sebagai Admin
                 </Button>
               </div>
             </div>
