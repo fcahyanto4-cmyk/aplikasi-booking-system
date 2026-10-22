@@ -114,10 +114,10 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
                   <Sparkles size={14} className="text-accent" />
-                  Akses Cepat (Akun Tamu)
+                  Mode Demo / Reviewer
                 </span>
                 <span className="text-[10px] bg-accent/20 text-accent font-semibold px-2 py-0.5 rounded-full border border-accent/30">
-                  Uji Coba Langsung
+                  1-Click Akses
                 </span>
               </div>
               <p className="text-xs text-text-muted leading-relaxed">

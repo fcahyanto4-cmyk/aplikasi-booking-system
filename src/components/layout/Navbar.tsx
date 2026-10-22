@@ -194,7 +194,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                   onClick={() => router.push("/login")}
                   className="border-accent/40 text-accent hover:bg-accent/15 text-xs font-semibold rounded-lg shadow-sm"
                 >
-                  ✨ Akun Tamu
+                  ✨ Demo / Reviewer
                 </Button>
                 <Button
                   variant="ghost"
@@ -297,7 +297,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                         }}
                         className="w-full justify-center border-accent/40 text-accent hover:bg-accent/15 font-semibold rounded-lg text-sm"
                       >
-                        ✨ Coba Akun Tamu
+                        ✨ Coba Demo / Reviewer
                       </Button>
                       <Button
                         variant="ghost"
