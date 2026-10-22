@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { snap } from "@/lib/midtrans";
 
@@ -205,10 +205,6 @@ export async function cancelBooking(bookingId: string) {
       return { success: false, message: "Booking sudah dibatalkan sebelumnya." };
     }
 
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
     
     // Update status using Admin client to bypass RLS infinite recursion bug.
     // Ownership was already verified above, and we re-assert it here in the

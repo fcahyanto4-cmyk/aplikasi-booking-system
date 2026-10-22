@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/supabase/config";
 
 interface ProcessPaymentParams {
   orderId: string;
@@ -14,8 +15,8 @@ export async function processPaymentStatus({
   grossAmount,
 }: ProcessPaymentParams) {
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY
   );
 
   console.log(

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { snap } from "@/lib/midtrans";
 
@@ -113,11 +113,6 @@ export async function registerEvent(eventId: string, usePoints: boolean = false)
 
       // Deduct points if used
       if (pointsToUse > 0) {
-        const supabaseAdmin = createSupabaseClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-          process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
-        
         await supabaseAdmin
           .from("profiles")
           .update({ points_balance: profile!.points_balance! - pointsToUse })
@@ -185,10 +180,6 @@ export async function cancelEventRegistration(participantId: string) {
       return { success: false, message: "Registrasi sudah dibatalkan sebelumnya." };
     }
 
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
     
     // Update status using Admin client to bypass RLS trigger restrictions on events table.
     // Ownership already verified above; re-asserted here in the WHERE clause too.
